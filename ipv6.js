@@ -1,9 +1,14 @@
 // Create the external function
+/**
+ * Calculates an IPv4-mapped IPv6 address.
+ * @param {string} ipv4 - An IPv4 address in dotted-quad format.
+ * @return {*} (ipv6Address) - An IPv6 address string or null if a run-time problem was detected.
+ */
 function getIpv4MappedIpv6Address(ipv4) {
 
   // Initialize return argument
   let ipv6Address = null;
-
+  
   // Prepare to derive a Hex version of the dotted-quad decimal IPv4 address.
   // Split the IPv4 address into its four parts.
   let ipv4Quads = ipv4.split('.');
