@@ -16,6 +16,18 @@ const IPCIDR = require('ip-cidr');
 const path = require('path');
 
 /**
+ * Calculates an IPv4-mapped IPv6 address.
+ * @param {string} ipv4 - An IPv4 address in dotted-quad format.
+ * @return {*} (ipv6Address) - An IPv6 address string or null if a run-time problem was detected.
+ */
+ /**
+ * Import helper function module located in the same directory
+ * as this module. IAP requires the path object's join method
+ * to unequivocally locate the file module.
+ */
+const { getIpv4MappedIpv6Address } = require(path.join(__dirname, 'ipv6.js'));
+
+/**
  * Calculate and return the first host IP address from a CIDR subnet.
  * @param {string} cidrStr - The IPv4 subnet expressed
  *                 in CIDR format.
@@ -51,20 +63,19 @@ function getFirstIpAddress(cidrStr, callback) {
   // Node.js convention is to pass error data as the first argument to a callback.
   // The IAP convention is to pass returned data as the first argument and error
   // data as the second argument to the callback function.
-  return callback(firstIpAddress, callbackError);
-}
+   let ipv4Address = firstIpAddress;
+   let ipv6Address = null;
+   if(ipv4Address != null) {
+      ipv6Address = getIpv4MappedIpv6Address(ipv4Address);
+   }
 
-/**
- * Calculates an IPv4-mapped IPv6 address.
- * @param {string} ipv4 - An IPv4 address in dotted-quad format.
- * @return {*} (ipv6Address) - An IPv6 address string or null if a run-time problem was detected.
- */
- /**
- * Import helper function module located in the same directory
- * as this module. IAP requires the path object's join method
- * to unequivocally locate the file module.
- */
-const { getIpv4MappedIpv6Address } = require(path.join(__dirname, 'ipv6.js'));
+   let resultObj = {
+       ipv4: ipv4Address,
+       ipv6: ipv6Address
+   };
+   
+  return callback(resultObj, callbackError);
+}
 
 /*
   This section is used to test function and log any errors.
@@ -87,9 +98,9 @@ function main() {
       // Now we are inside the callback function.
       // Display the results on the console.
       if (error) {
-        console.error(`  Error returned from GET request: ${error}`);
+        console.error(`  Error returned from GET request: ${JSON.stringify(error)}`);
       }
-      console.log(`  Response returned from GET request: ${data}`);
+      console.log(`  Response returned from GET request: ipv4: {"ipv4: " ${data.ipv4}, "ipv6: "${data.ipv6}}`);
     });
   }
   // Iterate over sampleIpv4s and pass the element's value to getIpv4MappedIpv6Address().
@@ -97,8 +108,9 @@ function main() {
     console.log(`\n--- Test Number ${i + 1} getIpv4MappedIpv6Address(${sampleIpv4s[i]}) ---`);
     // Assign the function results to a variable so we can check if a string or null was returned.
     let mappedAddress = getIpv4MappedIpv6Address(sampleIpv4s[i]);
+    // console.log(mappedAddress);
     if( mappedAddress ) {
-      console.log(`  IPv4 ${sampleIpv4s[i]} mapped to IPv6 Address: ${mappedAddress}`);
+      console.log(`  IPv4 ${sampleIpv4s[i]} mapped to IPv6 Address: ${JSON.stringify(mappedAddress)}`);
     } else {
       console.error(`  Problem converting IPv4 ${sampleIpv4s[i]} into a mapped IPv6 address.`);
     }
