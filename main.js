@@ -59,7 +59,18 @@ function getFirstIpAddress(cidrStr, callback) {
   // Node.js convention is to pass error data as the first argument to a callback.
   // The IAP convention is to pass returned data as the first argument and error
   // data as the second argument to the callback function.
-  return callback(firstIpAddress, callbackError);
+   let ipv4Address = firstIpAddress;
+   let ipv6Address = null;
+   if(ipv4Address != null) {
+      ipv6Address = getIpv4MappedIpv6Address(ipv4Address);
+   }
+
+   let resultObj = {
+       ipv4: ipv4Address,
+       ipv6: ipv6Address
+   };
+   
+  return callback(resultObj, callbackError);
 }
 
 /*
@@ -83,9 +94,9 @@ function main() {
       // Now we are inside the callback function.
       // Display the results on the console.
       if (error) {
-        console.error(`  Error returned from GET request: ${error}`);
+        console.error(`  Error returned from GET request: ${JSON.stringify(error)}`);
       }
-      console.log(`  Response returned from GET request: ${data}`);
+      console.log(`  Response returned from GET request: ipv4: {"ipv4: " ${data.ipv4}, "ipv6: "${data.ipv6}}`);
     });
   }
   // Iterate over sampleIpv4s and pass the element's value to getIpv4MappedIpv6Address().
@@ -95,7 +106,7 @@ function main() {
     let mappedAddress = getIpv4MappedIpv6Address(sampleIpv4s[i]);
     // console.log(mappedAddress);
     if( mappedAddress ) {
-      console.log(`  IPv4 ${sampleIpv4s[i]} mapped to IPv6 Address: ${mappedAddress}`);
+      console.log(`  IPv4 ${sampleIpv4s[i]} mapped to IPv6 Address: ${JSON.stringify(mappedAddress)}`);
     } else {
       console.error(`  Problem converting IPv4 ${sampleIpv4s[i]} into a mapped IPv6 address.`);
     }
